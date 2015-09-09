@@ -23,5 +23,5 @@ machines running Unix.
 Usage:
 
 	- ./memoryload.sh [memory load in decimal] [duration in seconds] [cpu count] 
-	- ./memoryload.sh 0.5 10 2 
+	- ./memoryload.sh 0.5 10 2  //will load till 50%
 
