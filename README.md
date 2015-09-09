@@ -1,6 +1,7 @@
 see cpuLoad parent script under ajurge/CPU_load repository
 
 It requires *stress* and *cpulimit* to be installed on the target machine:
+
 	- sudo apt-get install stress cpulimit (ubuntu)
 	- sudo yum install stress cpulimit (fedora/rhel)
 
