@@ -3,10 +3,10 @@
 # # CPU load script 
 
 # This script generates a desired CPU load and forces it per each core on 
-# machines running Ubuntu.
+# machines running Fedora/RHEL 6.x
 
 # It requires stress and cpulimit to be installed on the target machine:
-#    sudo apt-get install stress cpulimit
+#    sudo yum install cpuload stress
 
 # Usage:
 #    ./cpuload.sh [cpu load in percent] [duration in seconds] [cpu count]
