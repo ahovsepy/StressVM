@@ -1,13 +1,13 @@
 see cpuLoad parent script under ajurge/CPU_load repository
+
+It requires *stress* and *cpulimit* to be installed on the target machine:
+	- sudo apt-get install stress cpulimit (ubuntu)
+	- sudo yum install stress cpulimit (fedora/rhel)
+
 # CPU load script 
 
 This script generates a desired CPU load and forces it per each core on 
 machines running Unix.
-
-It requires *stress* and *cpulimit* to be installed on the target machine:
-
-	- sudo apt-get install stress cpulimit (ubuntu)
-	- sudo yum install stress cpulimit (fedora/rhel)
 
 Usage: 
 
@@ -16,13 +16,8 @@ Usage:
 
 # Memory load script 
 
-This script generates a desired CPU load and forces it per each core on
+This script generates a desired memory load and forces it per each core on
 machines running Unix.
-
-It requires *stress* and *cpulimit* to be installed on the target machine:
-
-        - sudo apt-get install stress cpulimit (ubuntu)
-        - sudo yum install stress cpulimit (fedora/rhel)
 
 Usage:
 
