@@ -1,4 +1,4 @@
- cpuLoad parent script under ajurge/CPU_load
+see cpuLoad parent script under ajurge/CPU_load repository
 # CPU load script 
 
 This script generates a desired CPU load and forces it per each core on 
