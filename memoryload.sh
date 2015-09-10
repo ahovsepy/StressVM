@@ -11,20 +11,25 @@
 #    sudo yum install cpuload stress
 
 # Usage:
-#    ./memoryload.sh [memory load in decimal] [duration in seconds] [cpu count] 
-#    ./memoryload.sh 0.5 10 2 
+#    ./memoryload.sh [memory load in decimal (for percent) or value] [duration in seconds] [cpu count] 
+#    ./memoryload.sh 0.5 10 2 // 50%
+#    ./memoryload.sh 1234 10 2 //1234k
 ###############################################################################
 
 
 ###############################################################################
 # Define general functions to be used by the script
 ###############################################################################
-   
-   # Validate the input arguments
+      
+# Validate the input arguments
 function validate_memory_load_value {
-      # Check if the entered memory load is valid
-#   if [[ $@ =~ ^-?[[:digit:]]+$ ]]
-    if [[ "$@" =~ ^[0-9]+(\.[0-9]+)?$ ]]
+ # Check if the entered memory load is valid
+    if [[ $@ =~ ^-?[[:digit:]]+$ ]]
+           then 
+            MEMORY_RATE_PERCENT=false
+            MEMORY_LIMIT=$@
+
+    elif [[ "$@" =~ ^[0-9]+(\.[0-9]+)?$ ]]
       then
          if [[ $@ > 1 ]] || [[ $@ < 0 ]]
             then
@@ -33,10 +38,13 @@ function validate_memory_load_value {
                exit
             else
                MEMORY_LIMIT=$@ 
+	       MEMORY_RATE_PERCENT=true
          fi
+      
       else
          echo "Error: Entered memory load value is not a number."
          exit
+
    fi
 }
 
@@ -59,8 +67,8 @@ function validate_duration_value {
 }
 
 function validate_cpu_count_value {
-#Check if entered cpu count is valid
-  if [[ $@ =~ ^-?[[:digit:]]+$ ]]
+ #Check if entered cpu count is valid
+   if [[ $@ =~ ^-?[[:digit:]]+$ ]]
       then
          if [[ $@ -lt $((0)) ]]
             then
@@ -101,10 +109,11 @@ function cpuLimit_for_each_pid {
 
 
 
+
 ###############################################################################
 # Start the script
 ###############################################################################
-USAGE="Usage: `basename $0` [memory load in decimal] [duration in seconds] [cpu count]"
+USAGE="Usage: `basename $0` [memory load in decimal (for percent) or value] [duration in seconds] [cpu count]"
 
    # Print usage
 if [ "$1" == "-h" ] || [ "$1" == "-help" ]; then
@@ -138,8 +147,19 @@ DESCRIPTION="Memory load script"
 echo $LOAD_DURATION
 echo $MEMORY_LIMIT
 echo $CPU_COUNT
-#stress -c $CPU_COUNT  -t $LOAD_DURATION  & 
-#echo $(awk '/MemFree/{printf "%d\n", $2 * '$MEMORY_LIMIT';}' < /proc/meminfo)k
-stress -t $LOAD_DURATION  --vm-bytes $(awk '/MemFree/{printf "%d\n", $2 * '$MEMORY_LIMIT';}' < /proc/meminfo)k --vm-keep -m $CPU_COUNT  &
+MAX_FREE_MEMORY=$(awk '/MemFree/{printf "%d\n", $2 * 0.9;}' < /proc/meminfo)
+echo "MAXFREEMEMORY" $MAX_FREE_MEMORY
+echo "MEMORY_LIMIT" $MEMORY_LIMIT
+
+if [[ $MEMORY_RATE_PERCENT == true ]]
+    then 
+    stress -t $LOAD_DURATION  --vm-bytes $(awk '/MemFree/{printf "%d\n", $2 * '$MEMORY_LIMIT';}' < /proc/meminfo)k --vm-keep -m $CPU_COUNT  &
+    elif [[ $MAX_FREE_MEMORY  -gt  $MEMORY_LIMIT ]] 
+       then 
+          stress -t $LOAD_DURATION  --vm-bytes $(echo $MEMORY_LIMIT)k --vm-keep -m $CPU_COUNT  &
+else
+    echo "Entered memory size is bigger then the possible maximum memory size."
+    exit 
+fi
 sleep 2
 cpuLimit_for_each_pid  $1
