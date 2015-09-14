@@ -11,6 +11,7 @@
 # Usage:
 #    ./cpuload.sh [cpu load in percent] [duration in seconds] [cpu count]
 #    ./cpuload.sh 25 10 2
+#    ./cpuload.sh unlimited 10 2
 ###############################################################################
 
 
