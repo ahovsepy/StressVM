@@ -1,4 +1,4 @@
- #!/bin/bash
+#!/bin/bash
 ###############################################################################
 # # CPU load script 
 
@@ -31,8 +31,13 @@ function validate_cpu_load_value {
             else
                CPULIMIT=$@ 
          fi
+      elif [[ $@ == "unlimited" ]]
+           then
+	   echo "cpu load is $@"
+           UNLIMITED=true
+           echo $UNLIMITED
       else
-         echo "Error: Entered CPU load value is not a number."
+         echo "Error: Entered CPU load value is not a number or unlimited."
          exit
    fi
 }
@@ -77,7 +82,7 @@ function validate_cpu_count_value {
 
 function cpuLimit_for_each_pid {
 #Retrieve all the stress process PIDS and omit the last PID of the parent process 
-   echo $@
+   echo "cpu limit $@ "
    OMIT_PID=$(pidof stress | sed 's/^.* //')
    STRESS_PIDS=$(pidof stress -o $OMIT_PID)
 
@@ -86,12 +91,11 @@ function cpuLimit_for_each_pid {
       #Set the affinity for each process to a separate core
       #Limit the CPU usage per stress process/PID
    array=(${STRESS_PIDS// / })
-   echo $1
    for PID in "${array[@]}"
    do
    cpulimit_p_options="$cpulimit_p_options -p $PID"
-   echo $PID
-   sudo cpulimit -p $PID -l $1 &
+   echo "stress process ID  $PID"
+   su -c "cpulimit -p $PID -l $@ &"
    done
    
 }
@@ -116,7 +120,7 @@ if [ $# -eq 3 ]; then
    validate_cpu_load_value $1
    validate_duration_value $2
    validate_cpu_count_value $3
-
+   
 else
    echo "Error: the number of input arguments is incorrect!"
    echo $USAGE
@@ -133,6 +137,15 @@ CURRENT_CORE_NUMBER=0  #Count starts from 0, 1, 2...
 
 DESCRIPTION="CPU load script"
 
-stress -c $CPU_COUNT  -t $CPU_LOAD_DURATION  & 
-sleep 2
-cpuLimit_for_each_pid  $1
+echo "cpu count $CPU_COUNT"
+echo "cpu load duration $CPU_LOAD_DURATION"
+echo "load $1"
+
+stress -c $CPU_COUNT  -t $CPU_LOAD_DURATION  &
+echo "stress started"
+if [[ !  $UNLIMITED ]]
+    then 
+	echo "$UNLIMITED"
+	cpuLimit_for_each_pid  $1 &
+fi
+
