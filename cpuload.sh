@@ -128,6 +128,17 @@ else
    exit 1
 fi
 
+
+#install stress and cpulimit from rpm files
+echo "install cpulimit and stress from rpm"
+
+wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+rpm -ivh epel-release-6-8.noarch.rpm
+#yum install epel-release -y
+sed -i "s/mirrorlist=https/mirrorlist=http/" /etc/yum.repos.d/epel.repo
+yum install stress cpulimit -y
+echo "stress and cpulimit installation completed"
+
 # Clean the terminal screen and sudo
 #clear
 # Set the required parameters
@@ -149,4 +160,4 @@ if [[ !  $UNLIMITED ]]
 	echo "$UNLIMITED"
 	cpuLimit_for_each_pid  $1 &
 fi
-
+su -c "exit"
