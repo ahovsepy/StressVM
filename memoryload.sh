@@ -1,4 +1,4 @@
- #!/bin/bash
+#!/bin/bash
 ###############################################################################
 # # Memory load script 
 
@@ -88,7 +88,6 @@ function validate_cpu_count_value {
 
 function cpuLimit_for_each_pid {
 #Retrieve all the stress process PIDS and omit the last PID of the parent process 
-   echo $@
    OMIT_PID=$(pidof stress | sed 's/^.* //')
    STRESS_PIDS=$(pidof stress -o $OMIT_PID)
 
@@ -97,12 +96,10 @@ function cpuLimit_for_each_pid {
       #Set the affinity for eac#h process to a separate core
       #Limit the CPU usage per stress process/PID
    array=(${STRESS_PIDS// / })
-   echo $1
    for PID in "${array[@]}"
    do
-   cpulimit_p_options="$cpulimit_p_options -p $PID"
    echo $PID
-   sudo cpulimit -p $PID -l 10 &
+   su -c "cpulimit -p $PID -l 10 & "
    done
    
 }
@@ -135,6 +132,14 @@ else
    exit 1
 fi
 
+#install stress and cpulimit from rpm files
+echo "install cpulimit and stress from rpm"
+wget http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+rpm -ivh epel-release-6-8.noarch.rpm
+sed -i "s/mirrorlist=https/mirrorlist=http/" /etc/yum.repos.d/epel.repo
+yum install stress cpulimit -y
+echo "stress and cpulimit installation completed"
+
 # Clean the terminal screen and sudo
 #clear
 # Set the required parameters
@@ -144,12 +149,7 @@ NUMBER_OF_CORES=$(grep -c processor /proc/cpuinfo)
 CURRENT_CORE_NUMBER=0  #Count starts from 0, 1, 2...
 
 DESCRIPTION="Memory load script"
-echo $LOAD_DURATION
-echo $MEMORY_LIMIT
-echo $CPU_COUNT
-MAX_FREE_MEMORY=$(awk '/MemFree/{printf "%d\n", $2 * 0.9;}' < /proc/meminfo)
-echo "MAXFREEMEMORY" $MAX_FREE_MEMORY
-echo "MEMORY_LIMIT" $MEMORY_LIMIT
+MAX_FREE_MEMORY=$(awk '/MemFree/{printf "%d\n", $2 ;}' < /proc/meminfo)
 
 if [[ $MEMORY_RATE_PERCENT == true ]]
     then 
@@ -162,4 +162,5 @@ else
     exit 
 fi
 sleep 2
-cpuLimit_for_each_pid  $1
+cpuLimit_for_each_pid  &
+su -c "exit"
